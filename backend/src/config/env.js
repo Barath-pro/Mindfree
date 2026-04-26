@@ -11,10 +11,6 @@ dotenv.config({
 
 const requiredEnv = ["MONGODB_URI", "JWT_SECRET"];
 
-function hasConfiguredGoogleKey() {
-  return Boolean(process.env.GOOGLE_API_KEY?.trim());
-}
-
 export function getGoogleAuthClientIds() {
   return (process.env.GOOGLE_CLIENT_ID || "")
     .split(",")
@@ -24,10 +20,6 @@ export function getGoogleAuthClientIds() {
 
 export function validateEnv() {
   const missing = requiredEnv.filter((key) => !process.env[key]);
-
-  if (!hasConfiguredGoogleKey()) {
-    missing.push("GOOGLE_API_KEY");
-  }
 
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);

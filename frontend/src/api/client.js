@@ -1,7 +1,23 @@
 import axios from "axios";
 
+function getDefaultApiUrl() {
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return "/_backend/api";
+  }
+
+  return "http://localhost:5000/api";
+}
+
+function getDefaultSocketUrl() {
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return "/_backend";
+  }
+
+  return "http://localhost:5000";
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+  baseURL: import.meta.env.VITE_API_URL || getDefaultApiUrl()
 });
 
 api.interceptors.request.use((config) => {
@@ -25,7 +41,6 @@ export function resolveAssetUrl(relativeUrl) {
     return relativeUrl;
   }
 
-  const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+  const socketUrl = import.meta.env.VITE_SOCKET_URL || getDefaultSocketUrl();
   return `${socketUrl}${relativeUrl}`;
 }
-

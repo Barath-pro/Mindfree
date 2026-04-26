@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
+function getDefaultSocketUrl() {
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return "/_backend";
+  }
+
+  return "http://localhost:5000";
+}
+
 export function useSocket(token, handlers = {}) {
   const socketRef = useRef(null);
   const handlersRef = useRef(handlers);
@@ -15,7 +23,7 @@ export function useSocket(token, handlers = {}) {
       return undefined;
     }
 
-    const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
+    const socket = io(import.meta.env.VITE_SOCKET_URL || getDefaultSocketUrl(), {
       transports: ["websocket"],
       auth: { token }
     });
