@@ -14,6 +14,15 @@ import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import { logger } from "./utils/logger.js";
 
 const app = express();
+const noopIo = {
+  to() {
+    return {
+      emit() {}
+    };
+  }
+};
+
+app.set("io", noopIo);
 
 app.use(
   cors({
