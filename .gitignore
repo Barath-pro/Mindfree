@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+coverage/
+.mongo-data/
+.mongo-uri.txt
+.mongo.log
+.mongo-err.txt
+backend/logs/
+backend/src/uploads/voice/
+*.log
