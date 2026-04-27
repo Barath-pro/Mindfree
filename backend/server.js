@@ -29,14 +29,27 @@ async function bootstrap() {
   return app;
 }
 
-bootstrapPromise ||= bootstrap().catch((error) => {
-  logger.error("Failed to start Vercel backend", {
-    error: error.message,
-    stack: error.stack
-  });
-  throw error;
-});
+async function getBootstrappedApp() {
+  bootstrapPromise ||= bootstrap();
 
-await bootstrapPromise;
+  return bootstrapPromise;
+}
 
-export default app;
+export default async function handler(req, res) {
+  try {
+    const bootstrappedApp = await getBootstrappedApp();
+    return bootstrappedApp(req, res);
+  } catch (error) {
+    logger.error("Failed to start Vercel backend", {
+      error: error.message,
+      stack: error.stack
+    });
+
+    res.statusCode = 500;
+    return res.json({
+      success: false,
+      message: "Backend startup failed. Check Vercel environment variables and MongoDB Atlas access.",
+      error: error.message
+    });
+  }
+}
