@@ -5,9 +5,6 @@ import { validateEnv } from "./src/config/env.js";
 import { User } from "./src/models/User.js";
 import { logger } from "./src/utils/logger.js";
 
-let isReady = false;
-let startupError;
-
 async function seedAdmin() {
   const existing = await User.findOne({ email: "admin@gmail.com" });
 
@@ -27,24 +24,14 @@ async function bootstrap() {
   validateEnv();
   await connectDatabase();
   await seedAdmin();
-  isReady = true;
 }
 
-app.get("/api/health", (_req, res) => {
-  res.status(startupError ? 500 : 200).json({
-    success: !startupError,
-    status: startupError ? "startup_failed" : isReady ? "ok" : "starting",
-    error: startupError?.message,
-    timestamp: new Date().toISOString()
-  });
-});
+let bootstrapPromise;
 
-bootstrap().catch((error) => {
-  startupError = error;
-  logger.error("Failed to start Vercel backend", {
-    error: error.message,
-    stack: error.stack
-  });
-});
+export function ensureBackendReady() {
+  bootstrapPromise ||= bootstrap();
+
+  return bootstrapPromise;
+}
 
 export default app;

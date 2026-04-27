@@ -2,7 +2,7 @@ import axios from "axios";
 
 function getDefaultApiUrl() {
   if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    return "/_backend/api";
+    return "/api";
   }
 
   return "http://localhost:5000/api";
@@ -10,7 +10,7 @@ function getDefaultApiUrl() {
 
 function getDefaultSocketUrl() {
   if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    return "/_backend";
+    return "";
   }
 
   return "http://localhost:5000";
