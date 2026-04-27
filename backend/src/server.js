@@ -46,6 +46,15 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT || 5000);
 
+  server.on("error", (error) => {
+    if (error.code === "EADDRINUSE") {
+      logger.error(`Port ${port} is already in use. Stop the existing process or set a different PORT in backend/.env.`);
+      process.exit(1);
+    }
+
+    throw error;
+  });
+
   server.listen(port, () => {
     logger.info(`Server listening on port ${port}`);
   });
