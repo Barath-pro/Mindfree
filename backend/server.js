@@ -5,6 +5,9 @@ import { validateEnv } from "./src/config/env.js";
 import { User } from "./src/models/User.js";
 import { logger } from "./src/utils/logger.js";
 
+let isReady = false;
+let startupError;
+
 async function seedAdmin() {
   const existing = await User.findOne({ email: "admin@gmail.com" });
 
@@ -20,36 +23,28 @@ async function seedAdmin() {
   }
 }
 
-let bootstrapPromise;
-
 async function bootstrap() {
   validateEnv();
   await connectDatabase();
   await seedAdmin();
-  return app;
+  isReady = true;
 }
 
-async function getBootstrappedApp() {
-  bootstrapPromise ||= bootstrap();
+app.get("/api/health", (_req, res) => {
+  res.status(startupError ? 500 : 200).json({
+    success: !startupError,
+    status: startupError ? "startup_failed" : isReady ? "ok" : "starting",
+    error: startupError?.message,
+    timestamp: new Date().toISOString()
+  });
+});
 
-  return bootstrapPromise;
-}
+bootstrap().catch((error) => {
+  startupError = error;
+  logger.error("Failed to start Vercel backend", {
+    error: error.message,
+    stack: error.stack
+  });
+});
 
-export default async function handler(req, res) {
-  try {
-    const bootstrappedApp = await getBootstrappedApp();
-    return bootstrappedApp(req, res);
-  } catch (error) {
-    logger.error("Failed to start Vercel backend", {
-      error: error.message,
-      stack: error.stack
-    });
-
-    res.statusCode = 500;
-    return res.json({
-      success: false,
-      message: "Backend startup failed. Check Vercel environment variables and MongoDB Atlas access.",
-      error: error.message
-    });
-  }
-}
+export default app;
