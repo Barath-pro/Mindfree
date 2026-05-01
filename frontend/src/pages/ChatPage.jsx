@@ -99,6 +99,7 @@ export default function ChatPage() {
     setActiveChat(chat);
     const { data } = await apiClient.get(`/chats/${chat.chat_id}/messages`);
     setMessages(data.messages);
+    setSidebarOpen(false);
   };
 
   const refreshSafetyStatus = async () => {
@@ -159,6 +160,7 @@ export default function ChatPage() {
     });
 
     await selectChat(data.chat);
+    setSidebarOpen(false);
   };
 
   const sendMessage = async (event) => {
@@ -490,6 +492,9 @@ export default function ChatPage() {
           </>
         ) : (
           <div className="empty-state">
+            <button className="text-button mobile-only-button" type="button" onClick={toggleSidebar}>
+              {sidebarOpen ? "Close menu" : "Menu"}
+            </button>
             <p className="eyebrow">Start here</p>
             <h1>Choose someone from the sidebar to open a secure chat.</h1>
           </div>

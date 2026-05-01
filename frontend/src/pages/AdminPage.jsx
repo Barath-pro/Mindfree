@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { apiClient } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
-import { Navigate } from "react-router-dom";
 
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  
   const [form, setForm] = useState({ fullName: "", email: "", password: "", role: "patient" });
   const [isAdding, setIsAdding] = useState(false);
 
@@ -40,6 +39,7 @@ export default function AdminPage() {
 
   const removeUser = async (id) => {
     if (!window.confirm("Are you sure you want to permanently delete this user?")) return;
+
     try {
       await apiClient.delete(`/admin/users/${id}`);
       await loadUsers();
@@ -48,8 +48,9 @@ export default function AdminPage() {
     }
   };
 
-  const submitAddUser = async (e) => {
-    e.preventDefault();
+  const submitAddUser = async (event) => {
+    event.preventDefault();
+
     try {
       setIsAdding(true);
       await apiClient.post("/admin/users", form);
@@ -63,101 +64,121 @@ export default function AdminPage() {
   };
 
   return (
-    <div style={{ padding: "40px", maxWidth: "1000px", margin: "0 auto" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", marginBottom: "30px", alignItems: "center" }}>
-        <h1 style={{ fontFamily: "Fraunces, serif", margin: 0 }}>Terminal Dashboard</h1>
-        <button onClick={logout} className="secondary-button" type="button">Sign out</button>
+    <div className="admin-page">
+      <header className="admin-header">
+        <h1>Terminal Dashboard</h1>
+        <button onClick={logout} className="secondary-button" type="button">
+          Sign out
+        </button>
       </header>
 
-      {/* Add User Form Section */}
-      <div style={{ background: "var(--panel-strong)", padding: "24px", borderRadius: "18px", border: "1px solid var(--line)", marginBottom: "30px" }}>
-        <h3 style={{ marginTop: 0 }}>Manually Add User</h3>
-        <form onSubmit={submitAddUser} style={{ display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: "150px" }}>
-            <label>Full Name</label>
-            <input required value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} placeholder="John Doe" />
-          </div>
-          <div style={{ flex: 1, minWidth: "150px" }}>
-            <label>Email</label>
-            <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="john@example.com" />
-          </div>
-          <div style={{ flex: 1, minWidth: "150px" }}>
-            <label>Password</label>
-            <input required type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="••••••••" />
-          </div>
-          <div style={{ flex: 1, minWidth: "120px" }}>
-            <label>Role</label>
-            <select value={form.role} onChange={e => setForm({...form, role: e.target.value})}>
+      <section className="admin-card">
+        <h3>Manually Add User</h3>
+        <form className="admin-user-form" onSubmit={submitAddUser}>
+          <label>
+            Full Name
+            <input
+              required
+              value={form.fullName}
+              onChange={(event) => setForm({ ...form, fullName: event.target.value })}
+              placeholder="John Doe"
+            />
+          </label>
+          <label>
+            Email
+            <input
+              required
+              type="email"
+              value={form.email}
+              onChange={(event) => setForm({ ...form, email: event.target.value })}
+              placeholder="john@example.com"
+            />
+          </label>
+          <label>
+            Password
+            <input
+              required
+              type="password"
+              value={form.password}
+              onChange={(event) => setForm({ ...form, password: event.target.value })}
+              placeholder="Password"
+            />
+          </label>
+          <label>
+            Role
+            <select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}>
               <option value="patient">Patient</option>
               <option value="psychologist">Psychologist</option>
               <option value="admin">Admin</option>
             </select>
-          </div>
+          </label>
           <button type="submit" disabled={isAdding} className="primary-button">
             {isAdding ? "Adding..." : "Add User"}
           </button>
         </form>
-      </div>
-      
+      </section>
+
       {loading ? (
         <div className="screen-loader">Loading users...</div>
       ) : (
-        <div style={{ background: "var(--panel-strong)", padding: "24px", borderRadius: "18px", border: "1px solid var(--line)" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+        <section className="admin-card admin-table-card">
+          <table className="admin-table">
             <thead>
-              <tr style={{ borderBottom: "2px solid var(--line)" }}>
-                <th style={{ padding: "12px 8px" }}>Name</th>
-                <th style={{ padding: "12px 8px" }}>Email</th>
-                <th style={{ padding: "12px 8px" }}>Role</th>
-                <th style={{ padding: "12px 8px" }}>Warnings</th>
-                <th style={{ padding: "12px 8px" }}>Status</th>
-                <th style={{ padding: "12px 8px" }}>Actions</th>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Warnings</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map(u => (
-                <tr key={u.id} style={{ borderBottom: "1px solid var(--line)" }}>
-                  <td style={{ padding: "12px 8px" }}><strong>{u.fullName}</strong></td>
-                  <td style={{ padding: "12px 8px" }}>{u.email}</td>
-                  <td style={{ padding: "12px 8px", textTransform: "capitalize" }}>{u.role}</td>
-                  <td style={{ padding: "12px 8px" }}>{u.warningCount}</td>
-                  <td style={{ padding: "12px 8px" }}>
-                    {u.isSuspended ? (
-                      <span style={{ color: "var(--alert)", fontWeight: "bold" }}>Suspended</span>
+              {users.map((listedUser) => (
+                <tr key={listedUser.id}>
+                  <td data-label="Name">
+                    <strong>{listedUser.fullName}</strong>
+                  </td>
+                  <td data-label="Email">{listedUser.email}</td>
+                  <td data-label="Role" className="admin-table__role">{listedUser.role}</td>
+                  <td data-label="Warnings">{listedUser.warningCount}</td>
+                  <td data-label="Status">
+                    {listedUser.isSuspended ? (
+                      <span className="admin-status admin-status--suspended">Suspended</span>
                     ) : (
-                      <span style={{ color: "var(--accent)" }}>Active</span>
+                      <span className="admin-status">Active</span>
                     )}
                   </td>
-                  <td style={{ padding: "12px 8px", display: "flex", gap: "8px" }}>
-                    {u.isSuspended && (
-                      <button 
+                  <td data-label="Actions">
+                    <div className="admin-table__actions">
+                      {listedUser.isSuspended ? (
+                        <button
+                          type="button"
+                          onClick={() => unsuspend(listedUser.id)}
+                          className="primary-button"
+                        >
+                          Unsuspend
+                        </button>
+                      ) : null}
+                      <button
                         type="button"
-                        onClick={() => unsuspend(u.id)}
-                        className="primary-button" 
-                        style={{ padding: "6px 12px", fontSize: "14px" }}
+                        onClick={() => removeUser(listedUser.id)}
+                        className="secondary-button admin-danger-button"
                       >
-                        Unsuspend
+                        Delete
                       </button>
-                    )}
-                    <button 
-                      type="button"
-                      onClick={() => removeUser(u.id)}
-                      className="secondary-button" 
-                      style={{ padding: "6px 12px", fontSize: "14px", background: "rgba(180, 83, 9, 0.16)", color: "var(--alert)" }}
-                    >
-                      Delete
-                    </button>
+                    </div>
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
+              {users.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ padding: "24px", textAlign: "center", color: "var(--muted)" }}>No users found.</td>
+                  <td className="admin-table__empty" colSpan="6">No users found.</td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
           </table>
-        </div>
+        </section>
       )}
     </div>
   );
